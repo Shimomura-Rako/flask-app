@@ -8,20 +8,9 @@ import pushbullet
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
-# 環境変数をロード
-load_dotenv()
-API_KEY = os.getenv("API_KEY")
-TEACHERS_RAW = os.getenv("TEACHERS")
-
-if not API_KEY or not TEACHERS_RAW:
-    print("⚠️ 環境変数が設定されていません。setup.sh を実行してください！")
-    exit(1)
-
-pb = pushbullet.Pushbullet(API_KEY)
-
 # Flask設定
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Renderで使う場合、SQLiteでも問題ない
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # SQLiteを使用
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your_secret_key'
 db = SQLAlchemy(app)
@@ -36,45 +25,40 @@ class UserData(db.Model):
 with app.app_context():
     db.create_all()
 
-# 講師情報を辞書に変換
-teachers = {t.split(":")[0]: t.split(":")[1] for t in TEACHERS_RAW.split(",")}
-last_notify_counts = {id: 0 for id in teachers}
+# Pushbullet通知を送信する関数（各ユーザーごとにトークンを使用）
+def send_push_notification(user_token, teacher_id, name):
+    """各ユーザーのPushbulletトークンを使って通知を送信"""
+    try:
+        pb_user = pushbullet.Pushbullet(user_token)
+        url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
+        pb_user.push_link(f"{name} レッスン開講通知", url)
+        print(f"📢 Push通知送信: {name} - {url}")
+    except Exception as e:
+        print(f"⚠️ Pushbullet通知の送信に失敗しました: {e}")
 
-def send_push_notification(teacher_id, name):
-    """Push通知を送信"""
-    url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
-    pb.push_link(f"{name} レッスン開講通知", url)
-    print(f"📢 Push通知送信: {name} - {url}")
+def check_teacher_availability():
+    """データベースに登録された全ユーザーの予約状況を確認し、必要なら通知"""
+    users = UserData.query.all()  # データベース内の全ユーザーを取得
+    for user in users:
+        teacher_id = user.teacher_id
+        user_token = user.pushbullet_token
 
-def check_teacher_availability(teacher_id, name):
-    """予約状況を確認して、通知が必要なら送信"""
-    global last_notify_counts
-    print(f"⏳ {name} の状況を確認中...")
+        load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
+        html = requests.get(load_url)
+        soup = BeautifulSoup(html.content, "html.parser")
 
-    load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
-    html = requests.get(load_url)
-    soup = BeautifulSoup(html.content, "html.parser")
+        if html.status_code != 200:
+            print(f"⚠️ {teacher_id} のページが見つかりません (ステータスコード: {html.status_code})")
+            continue
 
-    if html.status_code != 200:
-        print(f"⚠️ {name} のページが見つかりません: {load_url} (ステータスコード: {html.status_code})")
-        return
-
-    # 予約可能な時間を確認
-    fileText = "\n".join([element.text for element in soup.find_all(class_="oneday")])
-    current_count = fileText.count("予約可")
-
-    if current_count > last_notify_counts[teacher_id]:
-        send_push_notification(teacher_id, name)
-        last_notify_counts[teacher_id] = current_count
-
-def job():
-    """定期的に全ての講師の予約状況を確認"""
-    for teacher_id, name in teachers.items():
-        check_teacher_availability(teacher_id, name)
+        # 予約可能な時間を確認
+        fileText = "\n".join([element.text for element in soup.find_all(class_="oneday")])
+        if "予約可" in fileText:
+            send_push_notification(user_token, teacher_id, f"講師 {teacher_id}")
 
 # APSchedulerを使って定期的にスクレイピングを実行
 scheduler = BackgroundScheduler()
-scheduler.add_job(job, 'interval', minutes=1)  # 1分ごとに実行
+scheduler.add_job(check_teacher_availability, 'interval', minutes=1)  # 1分ごとに実行
 scheduler.start()
 
 @app.route("/", methods=["GET", "POST"])
@@ -94,7 +78,7 @@ def index():
         return redirect("/")
 
     all_data = UserData.query.all()
-    return render_template("index.html", all_data=all_data)  # ここを変更！
+    return render_template("index.html", all_data=all_data)
 
 if __name__ == "__main__":
     # Render用にポートとホスト設定を変更
