@@ -43,7 +43,7 @@ def check_teacher_availability():
         teacher_id = user.teacher_id
         user_token = user.pushbullet_token
 
-        load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
+        load_url = f"https://eikaiwa.dmm.com/teacher/schedule/{teacher_id}/"
         html = requests.get(load_url)
         soup = BeautifulSoup(html.content, "html.parser")
 
