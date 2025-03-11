@@ -1,12 +1,11 @@
 import os
-import time
 import requests
-from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, render_template, request, jsonify, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
 import pushbullet
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask, render_template, request, flash, redirect
 
 # Flask設定
 app = Flask(__name__)
@@ -27,7 +26,7 @@ with app.app_context():
 
 # Pushbullet通知を送信する関数（各ユーザーごとにトークンを使用）
 def send_push_notification(user_token, teacher_id, name):
-    """各ユーザーのPushbulletトークンを使って通知を送信"""
+    """Push通知を送信"""
     try:
         pb_user = pushbullet.Pushbullet(user_token)
         url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
@@ -44,16 +43,16 @@ def check_teacher_availability():
         user_token = user.pushbullet_token
 
         # 教師ページURLを生成
-        load_url = f"https://eikaiwa.dmm.com/teacher/schedule/{teacher_id}/"
+        load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
         html = requests.get(load_url)
-#       soup = BeautifulSoup(html.content, "html.parser")
-        soup = BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(html.content, "html.parser")
+
         if html.status_code != 200:
             print(f"⚠️ {teacher_id} のページが見つかりません (ステータスコード: {html.status_code})")
             continue
 
         # 講師名を取得
-        teacher_name_tag = soup.find("h1")
+        teacher_name_tag = soup.find("h1")  # 名前がh1タグにあると仮定
         if teacher_name_tag:
             teacher_name = teacher_name_tag.get_text(strip=True)
         else:
