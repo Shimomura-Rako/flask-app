@@ -42,6 +42,11 @@ def index():
             return render_template("index.html", error="講師名が取得できませんでした。", success=False)
     return render_template("index.html")
 
+import os
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Renderが指定するポートを使う
+    port = int(os.environ.get("PORT", 5000))
+    # どこからでもアクセスできるように設定
+    app.run(host="0.0.0.0", port=port)
 
