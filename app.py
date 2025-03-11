@@ -46,8 +46,8 @@ def check_teacher_availability():
         # 教師ページURLを生成
         load_url = f"https://eikaiwa.dmm.com/teacher/schedule/{teacher_id}/"
         html = requests.get(load_url)
-        soup = BeautifulSoup(html.content, "html.parser")
-
+#        soup = BeautifulSoup(html.content, "html.parser")
+         soup = BeautifulSoup(response.text, "html.parser")
         if html.status_code != 200:
             print(f"⚠️ {teacher_id} のページが見つかりません (ステータスコード: {html.status_code})")
             continue
