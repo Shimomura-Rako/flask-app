@@ -43,7 +43,8 @@ def check_teacher_availability():
         teacher_id = user.teacher_id
         user_token = user.pushbullet_token
 
-        load_url = f"https://eikaiwa.dmm.com/teacher/schedule/{teacher_id}/"
+        # 教師ページURLを生成
+        load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
         html = requests.get(load_url)
         soup = BeautifulSoup(html.content, "html.parser")
 
@@ -51,10 +52,18 @@ def check_teacher_availability():
             print(f"⚠️ {teacher_id} のページが見つかりません (ステータスコード: {html.status_code})")
             continue
 
-        # 予約可能な時間を確認
-        fileText = "\n".join([element.text for element in soup.find_all(class_="oneday")])
-        if "予約可" in fileText:
-            send_push_notification(user_token, teacher_id, f"講師 {teacher_id}")
+        # 講師名を取得
+        teacher_name_tag = soup.find("h1")
+        if teacher_name_tag:
+            teacher_name = teacher_name_tag.get_text(strip=True)
+        else:
+            teacher_name = "不明な講師"  # 名前が見つからない場合のフォールバック
+
+        # 予約状況を確認（仮のコード）
+        # ここで予約情報をチェックし、必要に応じて通知を送信します
+
+        # 例: 予約可の場合にPush通知を送る
+        send_push_notification(user_token, teacher_id, teacher_name)
 
 # APSchedulerを使って定期的にスクレイピングを実行
 scheduler = BackgroundScheduler()
