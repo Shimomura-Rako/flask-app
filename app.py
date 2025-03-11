@@ -31,10 +31,6 @@ class UserData(db.Model):
     teacher_id = db.Column(db.String(100), nullable=False)
     pushbullet_token = db.Column(db.String(255), nullable=False)
 
-class TeacherAvailability(db.Model):
-    teacher_id = db.Column(db.String(100), primary_key=True)
-    last_notify_count = db.Column(db.Integer, nullable=False)
-
 # 初回実行時にデータベースを作成
 with app.app_context():
     db.create_all()
@@ -48,51 +44,52 @@ def send_push_notification(teacher_id, name, user_pushbullet_token):
     pb.push_link(f"{name} レッスン開講通知", url, device_token=user_pushbullet_token)
     print(f"📢 Push通知送信: {name} - {url}")
 
-def check_teacher_availability(teacher_id, name, user_pushbullet_token):
-    """予約状況を確認して、通知が必要なら送信"""
-    global last_notify_counts
-    print(f"⏳ {name} の状況を確認中...")
+def get_teacher_name(teacher_id):
+    """講師名を取得"""
+    url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "html.parser")
+    teacher_name = soup.find("h1")
 
-    load_url = f"https://eikaiwa.dmm.com/teacher/schedule/{teacher_id}/"
-    html = requests.get(load_url)
-    soup = BeautifulSoup(html.content, "html.parser")
-
-    if html.status_code != 200:
-        print(f"⚠️ {name} のページが見つかりません: {load_url} (ステータスコード: {html.status_code})")
-        return
-
-    # 予約可能な時間を確認
-    fileText = "\n".join([element.text for element in soup.find_all(class_="oneday")])
-    current_count = fileText.count("予約可")
-
-    # データベースに保存された値を使って、前回と比べて予約可の数が増えた場合のみ通知
-    availability = TeacherAvailability.query.filter_by(teacher_id=teacher_id).first()
-    
-    if availability:
-        last_count = availability.last_notify_count
+    if teacher_name:
+        return teacher_name.get_text(strip=True)
     else:
-        # 初回の場合は、last_notify_countを0に設定
-        availability = TeacherAvailability(teacher_id=teacher_id, last_notify_count=0)
-        db.session.add(availability)
-        db.session.commit()
-        last_count = 0
+        return None
 
-    if current_count > last_count:
-        send_push_notification(teacher_id, name, user_pushbullet_token)
-        # 最新の通知カウントを保存
-        availability.last_notify_count = current_count
-        db.session.commit()
+def check_teacher_availability():
+    """データベースに登録された全ユーザーの予約状況を確認し、必要なら通知"""
+    users = UserData.query.all()  # データベース内の全ユーザーを取得
+    for user in users:
+        teacher_id = user.teacher_id
+        user_token = user.pushbullet_token
 
-def job():
-    """定期的に全ての講師の予約状況を確認"""
-    with app.app_context():  # アプリケーションコンテキスト内で処理を行う
-        all_users = UserData.query.all()
-        for user in all_users:
-            check_teacher_availability(user.teacher_id, user.teacher_id, user.pushbullet_token)
+        # 講師名を取得
+        teacher_name = get_teacher_name(teacher_id)
+        if teacher_name:
+            print(f"講師名: {teacher_name}")
+        else:
+            print(f"⚠️ {teacher_id} の講師名が見つかりません")
+
+        load_url = f"https://eikaiwa.dmm.com/teacher/schedule/{teacher_id}/"
+        html = requests.get(load_url)
+        soup = BeautifulSoup(html.content, "html.parser")
+
+        if html.status_code != 200:
+            print(f"⚠️ {teacher_id} のページが見つかりません (ステータスコード: {html.status_code})")
+            continue
+
+        # 予約可能な時間を確認
+        fileText = "\n".join([element.text for element in soup.find_all(class_="oneday")])
+        current_count = fileText.count("予約可")
+
+        # 通知が必要な場合のみ送信
+        if current_count > last_notify_counts.get(teacher_id, 0):
+            send_push_notification(teacher_id, teacher_name, user_token)
+            last_notify_counts[teacher_id] = current_count
 
 # APSchedulerを使って定期的にスクレイピングを実行
 scheduler = BackgroundScheduler()
-scheduler.add_job(job, 'interval', minutes=1)  # 1分ごとに実行
+scheduler.add_job(check_teacher_availability, 'interval', minutes=1)  # 1分ごとに実行
 scheduler.start()
 
 @app.route("/", methods=["GET", "POST"])
