@@ -31,6 +31,10 @@ class UserData(db.Model):
     teacher_id = db.Column(db.String(100), nullable=False)
     pushbullet_token = db.Column(db.String(255), nullable=False)
 
+class TeacherAvailability(db.Model):
+    teacher_id = db.Column(db.String(100), primary_key=True)
+    last_notify_count = db.Column(db.Integer, nullable=False)
+
 # 初回実行時にデータベースを作成
 with app.app_context():
     db.create_all()
@@ -61,9 +65,23 @@ def check_teacher_availability(teacher_id, name, user_pushbullet_token):
     fileText = "\n".join([element.text for element in soup.find_all(class_="oneday")])
     current_count = fileText.count("予約可")
 
-    if current_count > last_notify_counts.get(teacher_id, 0):
+    # データベースに保存された値を使って、前回と比べて予約可の数が増えた場合のみ通知
+    availability = TeacherAvailability.query.filter_by(teacher_id=teacher_id).first()
+    
+    if availability:
+        last_count = availability.last_notify_count
+    else:
+        # 初回の場合は、last_notify_countを0に設定
+        availability = TeacherAvailability(teacher_id=teacher_id, last_notify_count=0)
+        db.session.add(availability)
+        db.session.commit()
+        last_count = 0
+
+    if current_count > last_count:
         send_push_notification(teacher_id, name, user_pushbullet_token)
-        last_notify_counts[teacher_id] = current_count
+        # 最新の通知カウントを保存
+        availability.last_notify_count = current_count
+        db.session.commit()
 
 def job():
     """定期的に全ての講師の予約状況を確認"""
