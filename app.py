@@ -85,9 +85,10 @@ def check_teacher_availability(teacher_id, name, user_pushbullet_token):
 
 def job():
     """定期的に全ての講師の予約状況を確認"""
-    all_users = UserData.query.all()
-    for user in all_users:
-        check_teacher_availability(user.teacher_id, user.teacher_id, user.pushbullet_token)
+    with app.app_context():  # アプリケーションコンテキスト内で処理を行う
+        all_users = UserData.query.all()
+        for user in all_users:
+            check_teacher_availability(user.teacher_id, user.teacher_id, user.pushbullet_token)
 
 # APSchedulerを使って定期的にスクレイピングを実行
 scheduler = BackgroundScheduler()
