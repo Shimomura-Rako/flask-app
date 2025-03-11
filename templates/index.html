@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMM英会話 - 予約空き通知</title>
+</head>
+<body>
+    <h1>DMM英会話 - 予約空き通知</h1>
+
+    {% if success %}
+        <p>{{ teacher_name }} の空き枠があります！</p>
+    {% elif error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label for="teacher_id">講師ID:</label>
+        <input type="text" id="teacher_id" name="teacher_id" required><br><br>
+        <label for="api_key">Pushbullet APIキー:</label>
+        <input type="text" id="api_key" name="api_key" required><br><br>
+        <button type="submit">通知を送信</button>
+    </form>
+</body>
+</html>
