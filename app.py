@@ -94,7 +94,7 @@ def index():
         return redirect("/")
 
     all_data = UserData.query.all()
-    return render_template("form.html", all_data=all_data)
+    return render_template("index.html", all_data=all_data)
 
 if __name__ == "__main__":
     # Render用にポートとホスト設定を変更
