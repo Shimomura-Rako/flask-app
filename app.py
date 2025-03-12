@@ -20,7 +20,7 @@ from flask import Flask, render_template, request, flash, redirect
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # SQLiteを使用
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -38,6 +38,8 @@ class UserData(db.Model):
 
     teacher_id = db.Column(db.String(100), nullable=False)
 
+    teacher_name = db.Column(db.String(255), nullable=True)
+
     pushbullet_token = db.Column(db.String(255), nullable=False)
 
  
@@ -50,11 +52,35 @@ with app.app_context():
 
  
 
+# 講師名を取得する関数
+
+def get_teacher_name(teacher_id):
+
+    load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
+
+    headers = {"User-Agent": "Mozilla/5.0"}
+
+    html = requests.get(load_url, headers=headers)
+
+   
+
+    if html.status_code != 200:
+
+        return None
+
+   
+
+    soup = BeautifulSoup(html.content, "html.parser")
+
+    teacher_name_tag = soup.find("h1")
+
+    return teacher_name_tag.text.strip() if teacher_name_tag else "不明な講師"
+
+ 
+
 # Pushbullet通知を送信する関数
 
 def send_push_notification(user_token, teacher_id, name):
-
-    """Push通知を送信"""
 
     try:
 
@@ -72,83 +98,27 @@ def send_push_notification(user_token, teacher_id, name):
 
  
 
-# 予約状況を確認し、通知を送る関数
+# 予約状況を確認する関数
 
 def check_teacher_availability():
 
-    """データベースに登録された全ユーザーの予約状況を確認し、必要なら通知"""
-
-    users = UserData.query.all()  # データベース内の全ユーザーを取得
+    users = UserData.query.all()
 
     for user in users:
 
-        teacher_id = user.teacher_id
+        teacher_name = get_teacher_name(user.teacher_id)
 
-        user_token = user.pushbullet_token
+        if teacher_name:
 
- 
-
-        # 教師ページURLを生成
-
-        load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
-
-        headers = {
-
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-
-        }
-
-        html = requests.get(load_url, headers=headers)
-
-       
-
-        if html.status_code != 200:
-
-            print(f"⚠️ {teacher_id} のページが見つかりません (ステータスコード: {html.status_code})")
-
-            continue
+            send_push_notification(user.pushbullet_token, user.teacher_id, teacher_name)
 
  
 
-        soup = BeautifulSoup(html.content, "html.parser")
-
- 
-
-        # 講師名を取得
-
-        teacher_name_tag = soup.find("h1")
-
-        if teacher_name_tag and teacher_name_tag.text:
-
-            teacher_name = teacher_name_tag.text.strip()
-
-        else:
-
-            teacher_name = "不明な講師"
-
- 
-
-        print(f"🎤 取得した講師名: {teacher_name}")  # デバッグ用
-
- 
-
-        # 予約状況を確認（仮のコード）
-
-        # ここで予約情報をチェックし、必要に応じて通知を送信します
-
- 
-
-        # 例: 予約可の場合にPush通知を送る
-
-        send_push_notification(user_token, teacher_id, teacher_name)
-
- 
-
-# APSchedulerを使って定期的にスクレイピングを実行
+# APSchedulerで定期実行
 
 scheduler = BackgroundScheduler()
 
-scheduler.add_job(check_teacher_availability, 'interval', minutes=1)  # 1分ごとに実行
+scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
 
 scheduler.start()
 
@@ -166,7 +136,7 @@ def index():
 
         pushbullet_token = request.form.get("pushbullet_token")
 
- 
+       
 
         if not teacher_id or not pushbullet_token:
 
@@ -174,13 +144,21 @@ def index():
 
         else:
 
-            new_data = UserData(teacher_id=teacher_id, pushbullet_token=pushbullet_token)
+            teacher_name = get_teacher_name(teacher_id)
 
-            db.session.add(new_data)
+            if not teacher_name:
 
-            db.session.commit()
+                flash("講師情報が取得できませんでした。番号を確認してください。", "danger")
 
-            flash("データを保存しました！", "success")
+            else:
+
+                new_data = UserData(teacher_id=teacher_id, teacher_name=teacher_name, pushbullet_token=pushbullet_token)
+
+                db.session.add(new_data)
+
+                db.session.commit()
+
+                flash(f"{teacher_name} (講師番号: {teacher_id}) を登録しました！", "success")
 
  
 
@@ -196,10 +174,6 @@ def index():
 
 if __name__ == "__main__":
 
-    # Render用にポートとホスト設定を変更
+    port = int(os.environ.get("PORT", 5000))
 
-    port = int(os.environ.get("PORT", 5000))  # Renderが指定したポートを使用
-
-    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)  # 全てのIPアドレスからアクセス可能にする
-
- 
+    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
