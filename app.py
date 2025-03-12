@@ -82,11 +82,14 @@ def index():
         if not teacher_id or not pushbullet_token:
             flash("すべての項目を入力してください！", "danger")
         else:
-            teacher_name = f"講師{teacher_id}"  # 仮の講師名。実際にはget_teacher_name()で取得することができます。
-            new_data = UserData(teacher_id=teacher_id, teacher_name=teacher_name, pushbullet_token=pushbullet_token, last_available_count=0)
-            db.session.add(new_data)
-            db.session.commit()
-            flash(f"{teacher_name} (講師番号: {teacher_id}) を登録しました！", "success")
+            teacher_name = get_teacher_name(teacher_id)  # 実際の講師名を取得
+            if not teacher_name:
+                flash("講師情報が取得できませんでした。番号を確認してください。", "danger")
+            else:
+                new_data = UserData(teacher_id=teacher_id, teacher_name=teacher_name, pushbullet_token=pushbullet_token, last_available_count=0)
+                db.session.add(new_data)
+                db.session.commit()
+                flash(f"{teacher_name} (講師番号: {teacher_id}) を登録しました！", "success")
 
         return redirect("/")
 
