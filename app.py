@@ -61,11 +61,13 @@ def check_teacher_availability():
             print(f"講師 {user.teacher_name} の予約可数: {current_count}")
 
             if current_count > user.last_available_count:  # 予約可が増えていたら通知
-                send_push_notification(user.pushbullet_token, user.teacher_id, user.teacher_name)
+                if current_count > 0:  # 予約可が1の場合にのみ通知を送る
+                    send_push_notification(user.pushbullet_token, user.teacher_id, user.teacher_name)
 
             # データベースを更新
             user.last_available_count = current_count
             db.session.commit()
+
 
 # APSchedulerで定期実行
 scheduler = BackgroundScheduler()
