@@ -1,67 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <title>DMM英会話講師通知ツール</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let savedToken = localStorage.getItem("pushbullet_token");
-            if (savedToken) {
-                document.getElementById("pushbullet_token").value = savedToken;
-            }
-        });
-
-        function saveToken() {
-            let token = document.getElementById("pushbullet_token").value;
-            localStorage.setItem("pushbullet_token", token);
-        }
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMM英会話 予約通知ツール</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>DMM英会話講師通知ツール</h1>
-
+    <div class="container mt-5">
+        <h1 class="mb-4">DMM英会話 予約通知ツール</h1>
+        
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
-                    </div>
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-
-        <!-- 登録フォーム -->
-        <form method="POST" action="/" onsubmit="saveToken()">
-            <div class="form-group">
-                <label for="teacher_id">講師番号</label>
+        
+        <form method="POST" action="/">
+            <div class="mb-3">
+                <label for="teacher_id" class="form-label">講師番号</label>
                 <input type="text" class="form-control" id="teacher_id" name="teacher_id" required>
             </div>
-            <div class="form-group">
-                <label for="pushbullet_token">Pushbulletトークン</label>
+            <div class="mb-3">
+                <label for="pushbullet_token" class="form-label">Pushbullet トークン</label>
                 <input type="text" class="form-control" id="pushbullet_token" name="pushbullet_token" required>
             </div>
-            <button type="submit" class="btn btn-primary">登録</button>
+            <button type="submit" class="btn btn-primary">講師を登録</button>
         </form>
 
-        <h2>登録済み講師一覧</h2>
-        <table class="table">
+        <hr>
+        <h2 class="mt-4">登録済みの講師</h2>
+        <table class="table table-striped">
             <thead>
                 <tr>
                     <th>講師番号</th>
                     <th>講師名</th>
+                    <th>現在の予約可数</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody>
-                {% for data in all_data %}
+                {% for user in all_data %}
                 <tr>
-                    <td>{{ data.teacher_id }}</td>
-                    <td>{{ data.teacher_name }}</td>
+                    <td>{{ user.teacher_id }}</td>
+                    <td>{{ user.teacher_name }}</td>
+                    <td>{{ user.current_available_count }}</td>
                     <td>
-                        <!-- 削除ボタン -->
-                        <form method="POST" action="/delete_teacher">
-                            <input type="hidden" name="teacher_id" value="{{ data.teacher_id }}">
+                        <form method="POST" action="/delete_teacher" style="display:inline;">
+                            <input type="hidden" name="teacher_id" value="{{ user.teacher_id }}">
                             <button type="submit" class="btn btn-danger btn-sm">削除</button>
                         </form>
                     </td>
@@ -70,5 +58,7 @@
             </tbody>
         </table>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
