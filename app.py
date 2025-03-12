@@ -63,8 +63,12 @@ def get_available_slots(teacher_id):
         return 0
 
     soup = BeautifulSoup(response.content, "html.parser")
-    available_slots = soup.text.count("予約可")
 
+    # "予約可" の文字を含む要素を探す
+    available_slots = len(soup.find_all(string="予約可"))
+
+    print(f"🔍 講師 {teacher_id} の予約可数: {available_slots}")
+    
     return available_slots
 
 # Pushbullet通知を送信する関数
@@ -83,14 +87,20 @@ def check_teacher_availability():
         users = UserData.query.all()
         for user in users:
             current_count = get_available_slots(user.teacher_id)
-            print(f"講師 {user.teacher_name} の予約可数: {current_count}")
 
+            print(f"📊 {user.teacher_name} ({user.teacher_id}) - 予約可数: {current_count}, 前回: {user.last_available_count}")
+
+            # 予約可の数が増えたときのみ通知を送る
             if current_count > user.last_available_count:
                 if current_count > 0:
                     send_push_notification(user.pushbullet_token, user.teacher_id, user.teacher_name)
+                    print(f"📢 通知送信: {user.teacher_name}")
 
+            # データベースの値を更新
             user.last_available_count = current_count
             db.session.commit()
+            print(f"✅ {user.teacher_name} の last_available_count を {user.last_available_count} に更新")
+
 
 # APSchedulerで定期実行
 scheduler = BackgroundScheduler()
