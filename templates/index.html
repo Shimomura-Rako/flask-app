@@ -10,7 +10,7 @@
                 document.getElementById("pushbullet_token").value = savedToken;
             }
         });
-        
+
         function saveToken() {
             let token = document.getElementById("pushbullet_token").value;
             localStorage.setItem("pushbullet_token", token);
@@ -20,7 +20,7 @@
 <body>
     <div class="container">
         <h1>DMM英会話講師通知ツール</h1>
-        
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -30,8 +30,9 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
-        <form method="POST" action="/add_teacher" onsubmit="saveToken()">
+
+        <!-- 登録フォーム -->
+        <form method="POST" action="/" onsubmit="saveToken()">
             <div class="form-group">
                 <label for="teacher_id">講師番号</label>
                 <input type="text" class="form-control" id="teacher_id" name="teacher_id" required>
@@ -42,7 +43,7 @@
             </div>
             <button type="submit" class="btn btn-primary">登録</button>
         </form>
-        
+
         <h2>登録済み講師一覧</h2>
         <table class="table">
             <thead>
@@ -58,6 +59,7 @@
                     <td>{{ data.teacher_id }}</td>
                     <td>{{ data.teacher_name }}</td>
                     <td>
+                        <!-- 削除ボタン -->
                         <form method="POST" action="/delete_teacher">
                             <input type="hidden" name="teacher_id" value="{{ data.teacher_id }}">
                             <button type="submit" class="btn btn-danger btn-sm">削除</button>

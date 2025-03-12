@@ -82,15 +82,31 @@ def index():
         if not teacher_id or not pushbullet_token:
             flash("すべての項目を入力してください！", "danger")
         else:
-            new_data = UserData(teacher_id=teacher_id, teacher_name=f"講師{teacher_id}", pushbullet_token=pushbullet_token, last_available_count=0)
+            teacher_name = f"講師{teacher_id}"  # 仮の講師名。実際にはget_teacher_name()で取得することができます。
+            new_data = UserData(teacher_id=teacher_id, teacher_name=teacher_name, pushbullet_token=pushbullet_token, last_available_count=0)
             db.session.add(new_data)
             db.session.commit()
-            flash(f"講師 {teacher_id} を登録しました！", "success")
+            flash(f"{teacher_name} (講師番号: {teacher_id}) を登録しました！", "success")
 
         return redirect("/")
 
     all_data = UserData.query.all()
     return render_template("index.html", all_data=all_data)
+
+# 講師データを削除するルート
+@app.route("/delete_teacher", methods=["POST"])
+def delete_teacher():
+    teacher_id = request.form.get("teacher_id")  # 削除する講師番号を取得
+    teacher_data = UserData.query.filter_by(teacher_id=teacher_id).first()  # 該当する講師を検索
+
+    if teacher_data:
+        db.session.delete(teacher_data)  # データベースから削除
+        db.session.commit()
+        flash(f"講師番号 {teacher_id} を削除しました！", "success")
+    else:
+        flash(f"講師番号 {teacher_id} は存在しません。", "danger")
+
+    return redirect("/")  # 削除後にページを再表示
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
