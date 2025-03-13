@@ -111,16 +111,17 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
 scheduler.start()
 
-# ルートページ
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     total_teachers = UserData.query.count()
 
-    if total_teachers >= 10:
-        flash("登録できる講師は最大10件までです！", "danger")
-        return redirect("/")
-
     if request.method == "POST":
+        if total_teachers >= 10:
+            flash("登録できる講師は最大10件までです！", "danger")
+            return redirect("/")  # ここでリダイレクトせず、後でエラーメッセージを表示
+
         teacher_id = request.form.get("teacher_id")
         pushbullet_token = request.form.get("pushbullet_token")
 
@@ -149,7 +150,12 @@ def index():
         return redirect("/")
     
     all_data = UserData.query.all()
-    return render_template("index.html", all_data=all_data)
+    return render_template("index.html", all_data=all_data, total_teachers=total_teachers)
+
+
+
+
+
 
 # 講師データを削除
 @app.route("/delete_teacher", methods=["POST"])
