@@ -35,18 +35,25 @@ HEADERS = {
 def get_teacher_name(teacher_id):
     load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
     try:
-        response = requests.get(load_url, headers=HEADERS, timeout=5)
-        if response.status_code != 200:
-            print(f"⚠ 講師 {teacher_id} のページが見つかりません (HTTP {response.status_code})")
-            return None
+        response = requests.get(load_url, headers=HEADERS, timeout=5, allow_redirects=True)
+
+        # もしリダイレクトされてトップページに戻ったら、存在しないと判断
+        if response.url == "https://eikaiwa.dmm.com/":
+            print(f"⚠ 存在しない講師ID: {teacher_id}（リダイレクト検出）")
+            return None  # 存在しないと判断
+
         soup = BeautifulSoup(response.content, "html.parser")
         teacher_name_tag = soup.find("h1")
+        
         if teacher_name_tag:
             return teacher_name_tag.text.strip()
+
         print(f"⚠ 講師 {teacher_id} の情報が見つかりません (ページ構造が変わった可能性)")
     except requests.exceptions.RequestException as e:
         print(f"⚠ リクエストエラー: {e}")
-    return None
+    
+    return None  # エラー時は None を返す
+
 
 # 「予約可」の数を取得
 def get_available_slots(teacher_id):
