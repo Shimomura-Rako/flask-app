@@ -114,16 +114,25 @@ scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
 scheduler.start()
 
 
-# ルートページ
+# 今ある `index()` 関数を削除して、このコードを追加する
 @app.route("/", methods=["GET", "POST"])
 def index():
-    if request.method == "POST":
-        # 現在の登録件数を取得
-        total_teachers = UserData.query.count()
+    if "teacher_list" not in session:
+        session["teacher_list"] = []  # 初回アクセス時に空リストを作成
 
-        # 10件以上なら登録を拒否
-        if total_teachers >= 10:
-            flash("登録できる講師は最大10件までです！", "danger")
+    # **データベースから正しい登録データを取得し、session を更新**
+    db_teacher_ids = [user.teacher_id for user in UserData.query.all()]
+    session["teacher_list"] = db_teacher_ids  # データベースと同期
+    session.modified = True  # セッションを更新
+
+    total_teachers = UserData.query.count()
+    if total_teachers >= 10:
+        flash("全体の登録が最大10件に達しました！", "danger")
+        return redirect("/")
+
+    if request.method == "POST":
+        if len(session["teacher_list"]) >= 10:
+            flash("このブラウザでは最大10件までしか登録できません！", "danger")
             return redirect("/")
 
         teacher_id = request.form.get("teacher_id")
@@ -132,6 +141,11 @@ def index():
         if not teacher_id or not pushbullet_token:
             flash("すべての項目を入力してください！", "danger")
         else:
+            existing_teacher = UserData.query.filter_by(teacher_id=teacher_id).first()
+            if existing_teacher:
+                flash("この講師はすでに登録されています！", "warning")
+                return redirect("/")
+
             teacher_name = get_teacher_name(teacher_id)
             if not teacher_name:
                 flash("講師情報が取得できませんでした。番号を確認してください。", "danger")
@@ -139,19 +153,21 @@ def index():
                 new_data = UserData(
                     teacher_id=teacher_id, 
                     teacher_name=teacher_name, 
-                    pushbullet_token=pushbullet_token, 
-                    last_available_count=0
+                    pushbullet_token=pushbullet_token
                 )
                 db.session.add(new_data)
                 db.session.commit()
+
+                session["teacher_list"].append(teacher_id)
+                session.modified = True
+
                 flash(f"{teacher_name} (講師番号: {teacher_id}) を登録しました！", "success")
 
         return redirect("/")
     
+    # **データベースから取得した全講師を表示（セッションが消えても大丈夫）**
     all_data = UserData.query.all()
     return render_template("index.html", all_data=all_data)
-
-
 
 
 
