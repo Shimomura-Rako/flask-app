@@ -1,10 +1,10 @@
 import os
 import requests
+from flask import Flask, request, jsonify, flash, redirect
 from flask_sqlalchemy import SQLAlchemy
 from pushbullet import Pushbullet
 from bs4 import BeautifulSoup
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, request, jsonify
 
 # Flask設定
 app = Flask(__name__)
@@ -34,31 +34,22 @@ def get_teacher_name(teacher_id):
     }
     try:
         response = requests.get(load_url, headers=headers, timeout=5)
-
-        # 修正箇所：404エラーのハンドリング
         if response.status_code == 404:
             print(f"⚠ 講師 {teacher_id} のページが存在しません")
             return "NOT_FOUND"
-
         if response.status_code != 200:
             print(f"⚠ 講師 {teacher_id} のページが取得できません (HTTP {response.status_code})")
             return None
 
         soup = BeautifulSoup(response.content, "html.parser")
-        
-        # 修正箇所：講師名取得のロジック修正
-        teacher_name_tag = soup.find("h1")  # class="teacher-name" が不要だった
-        if teacher_name_tag:
-            return teacher_name_tag.text.strip()
-
-        print(f"⚠ 講師 {teacher_id} の情報が見つかりません (ページ構造が変わった可能性)")
+        teacher_name_tag = soup.find("h1")  # `class="teacher-name"` は不要
+        return teacher_name_tag.text.strip() if teacher_name_tag else None
 
     except requests.exceptions.RequestException as e:
         print(f"⚠ リクエストエラー: {e}")
+        return None
 
-    return None  # エラー時は None を返す
-
-# 講師ページから「予約可」の数を取得
+# 予約可の枠数を取得
 def get_available_slots(teacher_id):
     load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
     headers = {
@@ -68,11 +59,8 @@ def get_available_slots(teacher_id):
         response = requests.get(load_url, headers=headers, timeout=5)
         if response.status_code != 200:
             return 0
-
         soup = BeautifulSoup(response.content, "html.parser")
-        available_slots = len(soup.find_all(class_="status-open"))  # 「予約可」のクラス
-
-        return available_slots
+        return len(soup.find_all(class_="status-open"))  # 「予約可」のクラスをカウント
 
     except requests.exceptions.RequestException as e:
         print(f"⚠ リクエストエラー: {e}")
@@ -85,21 +73,25 @@ def check_and_notify():
         for user in users:
             teacher_name = get_teacher_name(user.teacher_id)
 
-            # 修正箇所：講師ページが削除されていた場合の処理
             if teacher_name == "NOT_FOUND":
-                pb = Pushbullet(user.pushbullet_token)
-                pb.push_note("DMM英会話", f"⚠ 講師 {user.teacher_id} のページが削除されました")
-                continue  # 処理をスキップ
+                try:
+                    pb = Pushbullet(user.pushbullet_token)
+                    pb.push_note("DMM英会話", f"⚠ 講師 {user.teacher_id} のページが削除されました")
+                except Exception as e:
+                    print(f"⚠ Pushbulletエラー: {e}")
+                continue
 
             if teacher_name is None:
-                continue  # 取得失敗時はスキップ
+                continue
 
             available_slots = get_available_slots(user.teacher_id)
-
             if available_slots > user.last_available_count:
-                pb = Pushbullet(user.pushbullet_token)
-                pb.push_note("DMM英会話", f"{teacher_name} の予約枠が増えました！")
-            
+                try:
+                    pb = Pushbullet(user.pushbullet_token)
+                    pb.push_note("DMM英会話", f"{teacher_name} の予約枠が増えました！")
+                except Exception as e:
+                    print(f"⚠ Pushbulletエラー: {e}")
+
             user.last_available_count = available_slots
             db.session.commit()
 
@@ -108,18 +100,15 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(check_and_notify, "interval", seconds=60)  # 1分ごとに実行
 scheduler.start()
 
-
 # 講師データを削除するルート
 @app.route("/delete_teacher", methods=["POST"])
 def delete_teacher():
     teacher_id = request.form.get("teacher_id")
-
     if not teacher_id:
         flash("講師IDを入力してください。", "warning")
         return redirect("/")
 
     teacher_data = UserData.query.filter_by(teacher_id=teacher_id).first()
-
     if teacher_data:
         db.session.delete(teacher_data)
         db.session.commit()
@@ -128,9 +117,6 @@ def delete_teacher():
         flash(f"講師番号 {teacher_id} は存在しません。", "danger")
 
     return redirect("/")
-
-
-
 
 # 講師を登録するAPI
 @app.route("/register", methods=["POST"])
@@ -141,28 +127,24 @@ def register_teacher():
     if not teacher_id or not pushbullet_token:
         return jsonify({"error": "講師IDとPushbulletトークンが必要です"}), 400
 
-    with app.app_context():
-        # 修正箇所：最大10件まで登録制限
-        if UserData.query.count() >= 10:
-            return jsonify({"error": "登録できる講師は最大10件までです"}), 400
+    if UserData.query.count() >= 10:
+        return jsonify({"error": "登録できる講師は最大10件までです"}), 400
 
-        existing_user = UserData.query.filter_by(teacher_id=teacher_id).first()
-        if existing_user:
-            return jsonify({"error": "この講師はすでに登録されています"}), 400
+    existing_user = UserData.query.filter_by(teacher_id=teacher_id).first()
+    if existing_user:
+        return jsonify({"error": "この講師はすでに登録されています"}), 400
 
-        teacher_name = get_teacher_name(teacher_id)
-        if teacher_name in [None, "NOT_FOUND"]:
-            return jsonify({"error": "講師情報が取得できませんでした。番号を確認してください。"}), 400
+    teacher_name = get_teacher_name(teacher_id)
+    if teacher_name in [None, "NOT_FOUND"]:
+        return jsonify({"error": "講師情報が取得できませんでした。番号を確認してください。"}), 400
 
-        new_user = UserData(teacher_id=teacher_id, teacher_name=teacher_name, pushbullet_token=pushbullet_token)
-        db.session.add(new_user)
-        db.session.commit()
+    new_user = UserData(teacher_id=teacher_id, teacher_name=teacher_name, pushbullet_token=pushbullet_token)
+    db.session.add(new_user)
+    db.session.commit()
 
     return jsonify({"message": f"講師 {teacher_name} が登録されました"}), 200
 
 # Flaskアプリ起動
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
-
-
+    app.run(host="0.0.0.0", port=port, debug=True)
