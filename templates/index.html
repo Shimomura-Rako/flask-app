@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMM英会話 予約通知ツール</title>
+    <title>~pamoka~ DMM英会話 予約通知ツール</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container mt-5">
         <h1 class="mb-4">DMM英会話 予約通知ツール</h1>
-        
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -17,7 +17,7 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
+
         <form method="POST" action="/">
             <div class="mb-3">
                 <label for="teacher_id" class="form-label">講師番号</label>
@@ -25,7 +25,7 @@
             </div>
             <div class="mb-3">
                 <label for="pushbullet_token" class="form-label">Pushbullet トークン</label>
-                <input type="text" class="form-control" id="pushbullet_token" name="pushbullet_token" required>
+                <input type="text" class="form-control" id="pushbullet_token" name="pushbullet_token" oninput="saveToken()" required>
             </div>
             <button type="submit" class="btn btn-primary">講師を登録</button>
         </form>
@@ -45,7 +45,6 @@
                 <tr>
                     <td>{{ user.teacher_id }}</td>
                     <td>{{ user.teacher_name }}</td>
-                    <td>{{ user.current_available_count }}</td>
                     <td>
                         <form method="POST" action="/delete_teacher" style="display:inline;">
                             <input type="hidden" name="teacher_id" value="{{ user.teacher_id }}">
@@ -59,5 +58,21 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // ページ読み込み時にローカルストレージのトークンを取得
+            const savedToken = localStorage.getItem("pushbullet_token");
+            if (savedToken) {
+                document.getElementById("pushbullet_token").value = savedToken;
+            }
+        });
+
+        function saveToken() {
+            // ユーザーが入力したトークンをローカルストレージに保存
+            const tokenValue = document.getElementById("pushbullet_token").value;
+            localStorage.setItem("pushbullet_token", tokenValue);
+        }
+    </script>
 </body>
 </html>
+
