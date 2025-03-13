@@ -28,11 +28,18 @@ with app.app_context():
 
 # ========== ルート定義 ==========
 
-@app.route("/", methods=["GET"])
+
+
+@app.route("/", methods=["GET", "POST"])
 def home():
-    """ホームページを表示"""
+    if request.method == "POST":
+        flash("このページではPOSTリクエストは許可されていません。", "warning")
+        return redirect("/")
+    
     all_data = UserData.query.all()
     return render_template("index.html", all_data=all_data)
+
+
 
 @app.route("/delete_teacher", methods=["POST"])
 def delete_teacher():
