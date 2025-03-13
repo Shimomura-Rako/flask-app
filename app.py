@@ -28,14 +28,8 @@ with app.app_context():
 
 # ========== ルート定義 ==========
 
-
-
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def home():
-    if request.method == "POST":
-        flash("このページではPOSTリクエストは許可されていません。", "warning")
-        return redirect("/")
-    
     all_data = UserData.query.all()
     return render_template("index.html", all_data=all_data)
 
@@ -59,31 +53,43 @@ def delete_teacher():
 
     return redirect("/")
 
+
 @app.route("/register", methods=["POST"])
 def register_teacher():
-    """講師を登録"""
-    teacher_id = request.json.get("teacher_id")
-    pushbullet_token = request.json.get("pushbullet_token")
+    teacher_id = request.form.get("teacher_id") or request.json.get("teacher_id")
+    pushbullet_token = request.form.get("pushbullet_token") or request.json.get("pushbullet_token")
 
     if not teacher_id or not pushbullet_token:
-        return jsonify({"error": "講師IDとPushbulletトークンが必要です"}), 400
+        flash("講師IDとPushbulletトークンが必要です", "danger")
+        return redirect("/")
 
     if UserData.query.count() >= 10:
-        return jsonify({"error": "登録できる講師は最大10件までです"}), 400
+        flash("登録できる講師は最大10件までです", "danger")
+        return redirect("/")
 
     existing_user = UserData.query.filter_by(teacher_id=teacher_id).first()
     if existing_user:
-        return jsonify({"error": "この講師はすでに登録されています"}), 400
+        flash("この講師はすでに登録されています", "warning")
+        return redirect("/")
 
     teacher_name = get_teacher_name(teacher_id)
     if teacher_name in [None, "NOT_FOUND"]:
-        return jsonify({"error": "講師情報が取得できませんでした。番号を確認してください。"}), 400
+        flash("講師情報が取得できませんでした。番号を確認してください。", "danger")
+        return redirect("/")
 
     new_user = UserData(teacher_id=teacher_id, teacher_name=teacher_name, pushbullet_token=pushbullet_token)
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": f"講師 {teacher_name} が登録されました"}), 200
+    flash(f"講師 {teacher_name} が登録されました！", "success")
+    return redirect("/")
+
+
+
+
+
+
+
 
 # ========== 補助関数 ==========
 
