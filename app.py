@@ -8,7 +8,7 @@ from flask import Flask, render_template, request, flash, redirect, session
 
 # Flask設定
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Renderではデータが消える可能性あり
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config["SESSION_PERMANENT"] = False
@@ -22,7 +22,7 @@ class UserData(db.Model):
     teacher_id = db.Column(db.String(100), nullable=False, unique=True)
     teacher_name = db.Column(db.String(255), nullable=True)
     pushbullet_token = db.Column(db.String(255), nullable=False)
-    last_available_count = db.Column(db.Integer, default=0)  # 前回の「予約可」の数
+    last_available_count = db.Column(db.Integer, default=0)
 
 # 初回実行時にデータベースを作成
 with app.app_context():
@@ -39,7 +39,6 @@ def get_teacher_name(teacher_id):
     try:
         response = requests.get(load_url, headers=HEADERS, timeout=5, allow_redirects=True)
 
-        # もしリダイレクトされてトップページに戻ったら、存在しないと判断
         if response.url == "https://eikaiwa.dmm.com/":
             print(f"⚠ 存在しない講師ID: {teacher_id}（リダイレクト検出）")
             return None
@@ -55,6 +54,31 @@ def get_teacher_name(teacher_id):
         print(f"⚠ リクエストエラー: {e}")
     
     return None
+
+# 「予約可」の数を取得（抜けていた関数を復元！）
+def get_available_slots(teacher_id):
+    load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
+    try:
+        response = requests.get(load_url, headers=HEADERS, timeout=5)
+        if response.status_code == 404:
+            print(f"⚠ 講師 {teacher_id} のページが存在しません (HTTP 404)")
+            return None
+
+        if response.status_code != 200:
+            print(f"⚠ 講師 {teacher_id} のページ取得失敗 (HTTP {response.status_code})")
+            return 0
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        available_slots = len(soup.find_all(string="予約可"))
+
+        print(f"🔍 講師 {teacher_id} の予約可数: {available_slots}")
+
+        return available_slots
+
+    except requests.exceptions.RequestException as e:
+        print(f"⚠ リクエストエラー: {e}")
+
+    return 0
 
 # 予約状況を確認し、必要なら通知を送る
 def check_teacher_availability():
@@ -83,16 +107,14 @@ scheduler.start()
 @app.route("/", methods=["GET", "POST"])
 def index():
     if "teacher_list" not in session:
-        session["teacher_list"] = []  # 初回アクセス時に空リストを作成
+        session["teacher_list"] = []  
 
-    # **全体の登録数チェック（全ブラウザ合計で10件まで）**
     total_teachers = UserData.query.count()
     if total_teachers >= 10:
         flash("全体の登録が最大10件に達しました！", "danger")
         return redirect("/")
 
     if request.method == "POST":
-        # **ブラウザごとの登録数チェック（1つのブラウザで10件まで）**
         if len(session["teacher_list"]) >= 10:
             flash("このブラウザでは最大10件までしか登録できません！", "danger")
             return redirect("/")
@@ -103,7 +125,6 @@ def index():
         if not teacher_id or not pushbullet_token:
             flash("すべての項目を入力してください！", "danger")
         else:
-            # **すでに登録されている講師をブロック**
             existing_teacher = UserData.query.filter_by(teacher_id=teacher_id).first()
             if existing_teacher:
                 flash("この講師はすでに登録されています！", "warning")
@@ -121,7 +142,6 @@ def index():
                 db.session.add(new_data)
                 db.session.commit()
 
-                # **セッションに登録した講師IDを追加**
                 session["teacher_list"].append(teacher_id)
                 session.modified = True
 
