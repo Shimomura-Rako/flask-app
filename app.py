@@ -106,12 +106,22 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
 scheduler.start()
 
+
 # ルートページ
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
+        # 現在の登録件数を取得
+        total_teachers = UserData.query.count()
+
+        # 10件以上なら登録を拒否
+        if total_teachers >= 10:
+            flash("登録できる講師は最大10件までです！", "danger")
+            return redirect("/")
+
         teacher_id = request.form.get("teacher_id")
         pushbullet_token = request.form.get("pushbullet_token")
+
         if not teacher_id or not pushbullet_token:
             flash("すべての項目を入力してください！", "danger")
         else:
@@ -119,12 +129,25 @@ def index():
             if not teacher_name:
                 flash("講師情報が取得できませんでした。番号を確認してください。", "danger")
             else:
-                new_data = UserData(teacher_id=teacher_id, teacher_name=teacher_name, pushbullet_token=pushbullet_token)
+                new_data = UserData(
+                    teacher_id=teacher_id, 
+                    teacher_name=teacher_name, 
+                    pushbullet_token=pushbullet_token, 
+                    last_available_count=0
+                )
                 db.session.add(new_data)
                 db.session.commit()
                 flash(f"{teacher_name} (講師番号: {teacher_id}) を登録しました！", "success")
+
         return redirect("/")
-    return render_template("index.html", all_data=UserData.query.all())
+    
+    all_data = UserData.query.all()
+    return render_template("index.html", all_data=all_data)
+
+
+
+
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
