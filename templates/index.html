@@ -9,7 +9,14 @@
 <body>
   <div class="container mt-5">
     <h1 class="mb-4">~pamoka~ DMM英会話 予約通知ツール</h1>
-    
+
+{% if user_id %}
+  <p>あなたのユーザーID：<strong>{{ user_id }}</strong>（このIDをメモしておくと別端末でも使えます）</p>
+{% endif %}
+ 
+
+
+   
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}

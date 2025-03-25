@@ -150,8 +150,8 @@ def index():
         return redirect("/")
     
     all_data = UserData.query.all()
-    return render_template("index.html", all_data=all_data, total_teachers=total_teachers)
-
+    #return render_template("index.html", all_data=all_data, total_teachers=total_teachers)
+    return render_template("index.html", all_data=all_data, total_teachers=total_teachers, user_id=session.get("user_id"))
 
 
 
