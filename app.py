@@ -42,12 +42,10 @@ def set_user():
         if not user_id:
             flash("ユーザーIDを入力してください！", "danger")
         else:
-            # 同じIDが他のセッションで使われているかチェック
             existing = UserData.query.filter_by(user_id=user_id).first()
             if existing:
                 flash("このユーザーIDはすでに使われています。他のIDをお試しください。", "danger")
                 return redirect("/set_user")
-
             session["user_id"] = user_id
             flash(f"ユーザーIDを設定しました: {user_id}", "success")
             return redirect("/")
@@ -98,6 +96,22 @@ def index():
 
     all_data = UserData.query.filter_by(user_id=user_id).all()
     return render_template("index.html", all_data=all_data, total_teachers=total_teachers, user_id=user_id)
+
+@app.route("/delete_teacher", methods=["POST", "GET"])
+def delete_teacher():
+    if request.method == "GET":
+        return redirect("/")
+
+    teacher_id = request.form.get("teacher_id")
+    user_id = session.get("user_id")
+    teacher_data = UserData.query.filter_by(teacher_id=teacher_id, user_id=user_id).first()
+    if teacher_data:
+        db.session.delete(teacher_data)
+        db.session.commit()
+        flash(f"講師番号 {teacher_id} を削除しました！", "success")
+    else:
+        flash(f"講師番号 {teacher_id} は存在しません。", "danger")
+    return redirect("/")
 
 def get_teacher_name(teacher_id):
     load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
