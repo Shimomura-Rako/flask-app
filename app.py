@@ -33,7 +33,7 @@ HEADERS = {
 @app.before_request
 def assign_user_id():
     if "user_id" not in session:
-        session["user_id"] = None  # 未設定状態で初期化
+        session["user_id"] = None
 
 @app.route("/set_user", methods=["GET", "POST"])
 def set_user():
@@ -42,6 +42,12 @@ def set_user():
         if not user_id:
             flash("ユーザーIDを入力してください！", "danger")
         else:
+            # 同じIDが他のセッションで使われているかチェック
+            existing = UserData.query.filter_by(user_id=user_id).first()
+            if existing:
+                flash("このユーザーIDはすでに使われています。他のIDをお試しください。", "danger")
+                return redirect("/set_user")
+
             session["user_id"] = user_id
             flash(f"ユーザーIDを設定しました: {user_id}", "success")
             return redirect("/")
