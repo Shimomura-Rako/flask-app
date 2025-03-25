@@ -1,0 +1,240 @@
+[33mcommit 690c7b2dff02580237ae3f7e0f90bca257c8696c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Thu Mar 13 00:32:57 2025 +0900
+
+    Updated app.py and index.html
+
+[33mcommit 61467cdb991b01f9c656d1ba83ba126da073d3db[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 23:55:15 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit 8118801f6158bc30af7d4750b16e221441e0a460[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 23:45:40 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit 89e95960d2f264153ec63614274ce0b9136b3730[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 23:42:57 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit 41df4fa2ecf1488748d01f94712a16741828a255[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 23:32:04 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit 49ceb9723ae27c9f325d1d4270d1b417bf70f316[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 23:10:25 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit de6cbdf51c2c0f68108e306c546072d49fd16aff[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 23:02:40 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit 1abc2d04539c52972220b7d67aab3ec0c6f62cbd[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 22:54:14 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit b030c028bb4aa6c19c728775a785193ff5dc0323[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 22:37:33 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit de52b033ecd3baa98d17135eab6bb72c054578fd[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 21:46:29 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit 64f4e878417fc7f61b60ca24c3fa3b7b49f87abc[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 21:33:06 2025 +0900
+
+    Update app.py and index.html
+
+[33mcommit 693dfe9f01e9aea2fd70e07762366e6f66aa01f0[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 20:07:02 2025 +0900
+
+    Fix: 講師名取得の修正
+
+[33mcommit 4f1e22fcf2ef51b537cd9860e118960f7da87afc[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 01:55:33 2025 +0900
+
+    Fix: Update teacher name retrieval and notifications
+
+[33mcommit e3036d6a85f28e060b1ba0460568087aff4bcff0[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 01:48:13 2025 +0900
+
+    Fix application context issue
+
+[33mcommit b2affeb68a22232738980ff05fae7e752f16bf67[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 01:43:45 2025 +0900
+
+    Add teacher availability tracking to database
+
+[33mcommit 60c9f60d16f120051ed476edf72e9d3588fdcdb7[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 01:32:36 2025 +0900
+
+    Fix Pushbullet notification and teacher name retrieval
+
+[33mcommit 073e7283a16326257fa3f6c816568da9ecf97c0d[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 01:19:15 2025 +0900
+
+    Updated app.py to use user-specific pushbullet tokens
+
+[33mcommit b343e304b01c852ef7b7df483c5532e66ae7c3ec[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 00:48:08 2025 +0900
+
+    Fix Pushbullet notification and teacher name retrieval
+
+[33mcommit 2994d3651784a2321db66e685502974baf586298[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 00:32:50 2025 +0900
+
+    Updated app.py
+
+[33mcommit 298ff90c0dd1c8ab7f54d97c07c8d2d75201268a[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 00:30:23 2025 +0900
+
+    Updated app.py
+
+[33mcommit e533a514c682417b8f15a302f38c828cd81d7bea[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 00:12:51 2025 +0900
+
+    Updated app.py for teacher name scraping
+
+[33mcommit 2f0dd8e795ef73ba972342ba28642aa2d1a1825b[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Wed Mar 12 00:11:47 2025 +0900
+
+    Updated app.py for teacher name scraping
+
+[33mcommit 7e505f6c1d767614a1a5756c7e620d83e5024567[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:59:43 2025 +0900
+
+    Updated app.py
+
+[33mcommit d918ef4a2e83ed97b13d6de8b83934a47064040f[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:51:05 2025 +0900
+
+    Added Gunicorn for production WSGI server
+
+[33mcommit 46251cc498d91a7c9a6253cdbdc85427ae09b96a[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:49:14 2025 +0900
+
+    Added Gunicorn for production WSGI server
+
+[33mcommit 12ea548171b3e5410ef3d9ce5ef90f7525b79aa2[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:47:51 2025 +0900
+
+    Updated index.html with better design
+
+[33mcommit e0e2c9ba83b298bc0ec6d6bc8a510bdc98fc4c30[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:40:04 2025 +0900
+
+    Added render.yaml with startCommand
+
+[33mcommit 9f7fb87e76c551fedbe05a87d2173238e46be854[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:29:45 2025 +0900
+
+    Use user-specific Pushbullet tokens
+
+[33mcommit 6c11d6e55c8c3def72220b84d9f1327f5f9ca510[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:16:44 2025 +0900
+
+    Added python-dotenv to requirements
+
+[33mcommit 18574ba0d1dee5f41ceba8e54213e04b58c08415[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:10:25 2025 +0900
+
+    Added Flask-SQLAlchemy to requirements
+
+[33mcommit 174d9c3101377b907622f98e1fed95731d4d0137[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:08:27 2025 +0900
+
+    Added APScheduler to requirements
+
+[33mcommit dc4d99edae559a79e9344341a32c38fd3200e3fc[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 23:06:15 2025 +0900
+
+    Updated app.py to use index.html
+
+[33mcommit 95830d6dd7284d5349077954dd5d0244c30036d8[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 22:45:22 2025 +0900
+
+    Updated app.py to use 0.0.0.0 and correct port
+
+[33mcommit a8e147f1a37693b4b4db9742d8303a1e82617987[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 22:28:35 2025 +0900
+
+    Add pushbullet.py to requirements.txt
+
+[33mcommit e8280cfa6438ea1755d98fe4edab629d6929cc6c[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 22:22:38 2025 +0900
+
+    Update requirements.txt with installed dependencies
+
+[33mcommit 22a72109f58a175b9ba2d953e20393a766b28db6[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 22:10:14 2025 +0900
+
+    Remove cloud-init from requirements.txt
+
+[33mcommit 4e0f27234b716410adfe5a5bec7a1e41cf3b4a3c[m
+Merge: ca27727 717ce18
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 21:56:17 2025 +0900
+
+    Merge branch 'main' of https://github.com/Shimomura-Rako/flask-app
+
+[33mcommit ca27727c061380b750252eb57f781e00b554c524[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 21:21:05 2025 +0900
+
+    Add requirements.txt
+
+[33mcommit 14e5e1965f66c78bd0c2c5086861fddb1566c547[m
+Author: miwanakayo <mi_wa82co65626@yahoo.co.jp>
+Date:   Tue Mar 11 21:00:10 2025 +0900
+
+    Initial commit
+
+[33mcommit 717ce1892de6968d17dc5dfad55277471c361073[m
+Author: Shimomura-Rako <80449722+Shimomura-Rako@users.noreply.github.com>
+Date:   Tue Mar 11 20:53:41 2025 +0900
+
+    Initial commit

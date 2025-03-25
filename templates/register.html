@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>メール登録</title>
+</head>
+<body>
+    <h2>メールアドレスを登録</h2>
+    <form id="registerForm">
+        <input type="email" id="email" placeholder="メールアドレスを入力" required>
+        <button type="submit">登録</button>
+    </form>
+
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let email = document.getElementById("email").value;
+
+            fetch("https://your-app.onrender.com/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-API-Key": "pamoka_dmm2025"  // ← APIキーを自動で入れる！
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error("Error:", error));
+        });
+    </script>
+</body>
+</html>
