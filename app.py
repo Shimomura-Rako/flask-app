@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, render_template, request, flash, redirect
+from flask import Flask, render_template, request, flash, redirect, session  # 👈 session 忘れてない？
 from flask_sqlalchemy import SQLAlchemy
 from pushbullet import Pushbullet
 from bs4 import BeautifulSoup
