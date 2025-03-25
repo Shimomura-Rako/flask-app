@@ -108,7 +108,7 @@ def check_teacher_availability():
 
 # APSchedulerで定期実行
 scheduler = BackgroundScheduler()
-scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
+scheduler.add_job(check_teacher_availability, 'interval', minutes=10)
 scheduler.start()
 
 
