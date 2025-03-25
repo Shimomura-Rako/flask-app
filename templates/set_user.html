@@ -22,20 +22,18 @@
       <div class="mb-3">
         <label for="user_id" class="form-label">ユーザーID（自由に決めてOK！）</label>
         <input type="text" class="form-control" id="user_id" name="user_id" required>
-        <div class="form-text">例：tanaka123、my-name、abc2025 など<br>忘れないようにメモしてください！</div>
+        <div class="form-text">例：tanaka123、my-name、abc2025 など<br>※他の人と被らないようにユニークなIDを設定してください</div>
       </div>
       <button type="submit" class="btn btn-primary">保存して始める</button>
     </form>
   </div>
 
   <script>
-    // ページ読み込み時に localStorage に保存されているIDがあれば表示する
     document.addEventListener("DOMContentLoaded", function() {
       const savedUserId = localStorage.getItem("user_id") || "";
       document.getElementById("user_id").value = savedUserId;
     });
 
-    // フォーム送信時に localStorage に保存
     document.querySelector("form").addEventListener("submit", function() {
       const userId = document.getElementById("user_id").value.trim();
       localStorage.setItem("user_id", userId);
