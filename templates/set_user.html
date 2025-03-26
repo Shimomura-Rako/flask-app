@@ -28,6 +28,18 @@
         <input type="hidden" name="user_id" value="{{ user_id }}">
         <button type="submit" class="btn btn-primary">このIDで始める</button>
       </form>
+
+<hr>
+<h2 class="mt-4">既にユーザーIDを持っている方</h2>
+<form method="POST" action="/set_user">
+  <div class="mb-3">
+    <label for="user_id" class="form-label">ユーザーIDを入力してログイン</label>
+    <input type="text" class="form-control" id="user_id" name="user_id" required>
+  </div>
+  <button type="submit" class="btn btn-secondary">このIDでログイン</button>
+</form>
+
+
     {% endif %}
   </div>
 
