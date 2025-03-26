@@ -1,3 +1,4 @@
+<!-- ✅ set_user.html 全コード -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -10,27 +11,24 @@
   <div class="container mt-5">
     <h1 class="mb-4">あなたのユーザーID</h1>
 
-    <div class="alert alert-success">
-  <strong>{{ user_id }}</strong><br>
-  このIDをメモしておくと、別の端末でも同じ講師を管理できます！
-</div>
-{% if user_id %}
-  <div class="mb-4">
-    <p>🆔 あなたのユーザーID：<strong>{{ user_id }}</strong></p>
-    <div class="btn-group">
-      <a href="/set_user" class="btn btn-outline-secondary btn-sm">IDを変更する</a>
-      <form method="POST" action="/reset_user" style="display:inline;">
-        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('データを完全にリセットしてもよいですか？')">データをリセット</button>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if user_id %}
+      <div class="alert alert-success">
+        <strong>{{ user_id }}</strong><br>
+        このIDをメモしておくと、別の端末でも同じ講師を管理できます！
+      </div>
+      <form method="POST" action="/set_user">
+        <input type="hidden" name="user_id" value="{{ user_id }}">
+        <button type="submit" class="btn btn-primary">このIDで始める</button>
       </form>
-    </div>
-  </div>
-{% endif %}
-
-
-    <form method="POST" action="/set_user">
-      <input type="hidden" name="user_id" value="{{ user_id }}">
-      <button type="submit" class="btn btn-primary">このIDで始める</button>
-    </form>
+    {% endif %}
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

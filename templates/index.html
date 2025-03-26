@@ -1,3 +1,4 @@
+<!-- ✅ index.html 全コード -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -10,13 +11,18 @@
   <div class="container mt-5">
     <h1 class="mb-4">~pamoka~ DMM英会話 予約通知ツール</h1>
 
-{% if user_id %}
-  <p>あなたのユーザーID：<strong>{{ user_id }}</strong>（このIDをメモしておくと別端末でも使えます）</p>
-{% endif %}
- 
+    {% if user_id %}
+      <div class="mb-4">
+        <p>🆔 あなたのユーザーID：<strong>{{ user_id }}</strong>（このIDをメモしておくと別端末でも使えます）</p>
+        <div class="btn-group">
+          <a href="/set_user" class="btn btn-outline-secondary btn-sm">IDを変更する</a>
+          <form method="POST" action="/reset_user" style="display:inline;">
+            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('データを完全にリセットしてもよいですか？')">データをリセット</button>
+          </form>
+        </div>
+      </div>
+    {% endif %}
 
-
-   
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -24,22 +30,19 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-    
-<form method="POST" action="/">
-  <div class="mb-3">
-    <label for="teacher_id" class="form-label">講師番号</label>
-    <input type="text" class="form-control" id="teacher_id" name="teacher_id" required>
-  </div>
-  <div class="mb-3">
-    <label for="pushbullet_token" class="form-label">Pushbullet トークン</label>
-    <input type="text" class="form-control" id="pushbullet_token" name="pushbullet_token" required>
-  </div>
 
-  <!-- ここにある「講師を登録」ボタンを置き換える！ -->
-  <button type="submit" class="btn btn-primary">講師を登録</button>
-</form>
+    <form method="POST" action="/">
+      <div class="mb-3">
+        <label for="teacher_id" class="form-label">講師番号</label>
+        <input type="text" class="form-control" id="teacher_id" name="teacher_id" required>
+      </div>
+      <div class="mb-3">
+        <label for="pushbullet_token" class="form-label">Pushbullet トークン</label>
+        <input type="text" class="form-control" id="pushbullet_token" name="pushbullet_token" required>
+      </div>
+      <button type="submit" class="btn btn-primary">講師を登録</button>
+    </form>
 
-    
     <hr>
     <h2 class="mt-4">登録済みの講師</h2>
     <table class="table table-striped">
@@ -66,26 +69,18 @@
       </tbody>
     </table>
   </div>
-  
+
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      // ページ読み込み時にローカルストレージのトークンを取得
       const savedToken = localStorage.getItem("pushbullet_token") || "";
       document.getElementById("pushbullet_token").value = savedToken;
     });
-    
-    function saveToken() {
-      // ユーザーが入力したトークンをローカルストレージに保存
-      const tokenValue = document.getElementById("pushbullet_token").value.trim();
-      localStorage.setItem("pushbullet_token", tokenValue);
-    }
 
     function confirmDelete(teacherName) {
       return confirm(`本当に ${teacherName} を削除しますか？`);
     }
   </script>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
