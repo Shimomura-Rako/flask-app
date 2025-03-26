@@ -117,6 +117,16 @@ def delete_teacher():
         flash(f"講師番号 {teacher_id} は存在しません。", "danger")
     return redirect("/")
 
+
+@app.route("/reset_user", methods=["POST"])
+def reset_user():
+    session.clear()
+    flash("ユーザーIDをリセットしました。新しく設定してください！", "success")
+    return redirect("/set_user")
+
+
+
+
 def get_teacher_name(teacher_id):
     load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
     try:
