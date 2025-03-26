@@ -42,14 +42,12 @@ def set_user():
         if not user_id:
             flash("ユーザーIDを入力してください！", "danger")
         else:
-            existing = UserData.query.filter_by(user_id=user_id).first()
-            if existing:
-                flash("このユーザーIDはすでに使われています。他のIDをお試しください。", "danger")
-                return redirect("/set_user")
+            # すでに存在しても、自分として使うのはOK
             session["user_id"] = user_id
             flash(f"ユーザーIDを設定しました: {user_id}", "success")
             return redirect("/")
     return render_template("set_user.html")
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
