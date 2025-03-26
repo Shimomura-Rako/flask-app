@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, flash, session
 import os
 import requests
+import random
+import string
 from flask_sqlalchemy import SQLAlchemy
 from pushbullet import Pushbullet
 from bs4 import BeautifulSoup
@@ -30,6 +32,9 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
+def generate_user_id(length=10):
+    return 'user_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
+
 @app.before_request
 def assign_user_id():
     if "user_id" not in session:
@@ -42,12 +47,13 @@ def set_user():
         if not user_id:
             flash("ユーザーIDを入力してください！", "danger")
         else:
-            # すでに存在しても、自分として使うのはOK
             session["user_id"] = user_id
             flash(f"ユーザーIDを設定しました: {user_id}", "success")
             return redirect("/")
-    return render_template("set_user.html")
-
+    else:
+        user_id = generate_user_id()
+        session["user_id"] = user_id
+        return render_template("set_user.html", user_id=user_id)
 
 @app.route("/", methods=["GET", "POST"])
 def index():

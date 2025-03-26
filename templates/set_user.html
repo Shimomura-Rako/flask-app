@@ -11,9 +11,10 @@
     <h1 class="mb-4">あなたのユーザーID</h1>
 
     <div class="alert alert-success">
-      <strong>{{ user_id }}</strong><br>
-      このIDをメモしておくと、別の端末でも同じ講師を管理できます！
-    </div>
+  <strong>{{ user_id }}</strong><br>
+  このIDをメモしておくと、別の端末でも同じ講師を管理できます！
+</div>
+
 
     <form method="POST" action="/set_user">
       <input type="hidden" name="user_id" value="{{ user_id }}">
