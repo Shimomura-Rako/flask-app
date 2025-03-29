@@ -9,6 +9,9 @@ from bs4 import BeautifulSoup
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
 
+import time
+
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -244,6 +247,8 @@ def check_teacher_availability():
             error_count_this_run = 0
 
             for user in users:
+                time.sleep(random.uniform(0.5, 2.0))  # ✅ ここが追加ポイント！
+
                 current_count = get_available_slots(user.teacher_id)
                 if current_count is None:
                     error_count_this_run += 1
@@ -251,8 +256,10 @@ def check_teacher_availability():
 
                 if current_count > user.last_available_count:
                     send_push_notification(user.pushbullet_token, user.teacher_id, user.teacher_name)
+
                 user.last_available_count = current_count
                 db.session.commit()
+
 
             if error_count_this_run == len(users):
                 consecutive_errors += 1
