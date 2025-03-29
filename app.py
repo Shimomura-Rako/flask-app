@@ -297,9 +297,13 @@ from flask import send_file  # ← すでにあるかも。なければこれを
 @app.route("/download")
 def download_db():
     try:
-        return send_file("database.db", as_attachment=True)
+        # 📍 このファイル（app.py）と同じ場所にある database.db を探す
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        db_path = os.path.join(base_dir, "database.db")
+        return send_file(db_path, as_attachment=True)
     except Exception as e:
         return f"ダウンロードに失敗しました: {e}"
+
 
 
 
