@@ -40,6 +40,10 @@ def assign_user_id():
     if "user_id" not in session:
         session["user_id"] = None
 
+
+
+
+
 @app.route("/set_user", methods=["GET", "POST"])
 def set_user():
     if request.method == "POST":
@@ -79,13 +83,13 @@ def set_user():
 
 
 
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     user_id = session.get("user_id")
     if not user_id:
         return redirect("/set_user")
 
+    # 最終アクセス時間の更新
     UserData.query.filter_by(user_id=user_id).update({"last_accessed": datetime.utcnow()})
     db.session.commit()
 
@@ -99,32 +103,52 @@ def index():
         teacher_id = request.form.get("teacher_id")
         pushbullet_token = request.form.get("pushbullet_token")
 
+        # ✅ 入力された講師番号が数字だけかどうかチェック
+        if not teacher_id.isdigit():
+            flash("講師番号は数字のみで入力してください。", "danger")
+            return redirect("/")
+
         if not teacher_id or not pushbullet_token:
             flash("すべての項目を入力してください！", "danger")
-        else:
-            existing_teacher = UserData.query.filter_by(teacher_id=teacher_id, user_id=user_id).first()
-            if existing_teacher:
-                flash("この講師はすでに登録されています！", "warning")
-                return redirect("/")
+            return redirect("/")
 
-            teacher_name = get_teacher_name(teacher_id)
-            if not teacher_name:
-                flash("講師情報が取得できませんでした。番号を確認してください。", "danger")
-            else:
-                new_data = UserData(
-                    teacher_id=teacher_id,
-                    teacher_name=teacher_name,
-                    pushbullet_token=pushbullet_token,
-                    user_id=user_id
-                )
-                db.session.add(new_data)
-                db.session.commit()
-                flash(f"{teacher_name} (講師番号: {teacher_id}) を登録しました！", "success")
+        existing_teacher = UserData.query.filter_by(teacher_id=teacher_id, user_id=user_id).first()
+        if existing_teacher:
+            flash("この講師はすでに登録されています！", "warning")
+            return redirect("/")
+
+        teacher_name = get_teacher_name(teacher_id)
+
+        # ✅ 講師名が取得できなければエラーで終了
+        if not teacher_name:
+            flash("講師情報が取得できませんでした。番号を確認してください。", "danger")
+            return redirect("/")
+
+        # 登録処理
+        new_data = UserData(
+            teacher_id=teacher_id,
+            teacher_name=teacher_name,
+            pushbullet_token=pushbullet_token,
+            user_id=user_id
+        )
+        db.session.add(new_data)
+        db.session.commit()
+        flash(f"{teacher_name} (講師番号: {teacher_id}) を登録しました！", "success")
 
         return redirect("/")
 
+    # GETメソッド時：登録済みデータを表示
     all_data = UserData.query.filter_by(user_id=user_id).all()
     return render_template("index.html", all_data=all_data, total_teachers=total_teachers, user_id=user_id)
+
+
+
+
+
+
+
+
+
 
 @app.route("/delete_teacher", methods=["POST", "GET"])
 def delete_teacher():
