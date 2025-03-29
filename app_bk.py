@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, flash, session
 import os
 import requests
+import random
+import string
 from flask_sqlalchemy import SQLAlchemy
 from pushbullet import Pushbullet
 from bs4 import BeautifulSoup
@@ -30,6 +32,9 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
+def generate_user_id(length=10):
+    return 'user_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
+
 @app.before_request
 def assign_user_id():
     if "user_id" not in session:
@@ -42,12 +47,13 @@ def set_user():
         if not user_id:
             flash("ユーザーIDを入力してください！", "danger")
         else:
-            # すでに存在しても、自分として使うのはOK
             session["user_id"] = user_id
             flash(f"ユーザーIDを設定しました: {user_id}", "success")
             return redirect("/")
-    return render_template("set_user.html")
-
+    else:
+        user_id = generate_user_id()
+        session["user_id"] = user_id
+        return render_template("set_user.html", user_id=user_id)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -111,6 +117,21 @@ def delete_teacher():
         flash(f"講師番号 {teacher_id} は存在しません。", "danger")
     return redirect("/")
 
+
+@app.route("/reset_user", methods=["POST"])
+def reset_user():
+    session.clear()
+    flash("ユーザーIDをリセットしました。新しく設定してください！", "success")
+    return redirect("/set_user")
+
+
+@app.route("/tutorial")
+def tutorial():
+    return render_template("tutorial.html")
+
+
+
+
 def get_teacher_name(teacher_id):
     load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
     try:
@@ -157,8 +178,21 @@ def check_teacher_availability():
         except Exception as e:
             print(f"⚠ 通知チェックでエラー発生: {e}")
 
+
+def clean_old_data():
+    with app.app_context():
+        threshold = datetime.utcnow() - timedelta(days=30)
+        old_users = UserData.query.filter(UserData.last_accessed < threshold).all()
+        for user in old_users:
+            db.session.delete(user)
+        db.session.commit()
+        print(f"🧹 古いデータを削除しました: {len(old_users)} 件")
+
+
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
+scheduler.add_job(clean_old_data, 'cron', hour=4)
 scheduler.start()
 
 if __name__ == "__main__":

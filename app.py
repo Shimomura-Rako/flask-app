@@ -117,20 +117,15 @@ def delete_teacher():
         flash(f"講師番号 {teacher_id} は存在しません。", "danger")
     return redirect("/")
 
-
 @app.route("/reset_user", methods=["POST"])
 def reset_user():
     session.clear()
     flash("ユーザーIDをリセットしました。新しく設定してください！", "success")
     return redirect("/set_user")
 
-
 @app.route("/tutorial")
 def tutorial():
     return render_template("tutorial.html")
-
-
-
 
 def get_teacher_name(teacher_id):
     load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
@@ -148,12 +143,12 @@ def get_available_slots(teacher_id):
     load_url = f"https://eikaiwa.dmm.com/teacher/index/{teacher_id}/"
     try:
         response = requests.get(load_url, headers=HEADERS, timeout=5)
-        if response.status_code != 200:
-            return 0
+        if response.status_code != 200 or response.url == "https://eikaiwa.dmm.com/":
+            return None
         soup = BeautifulSoup(response.content, "html.parser")
         return len(soup.find_all(string="予約可"))
     except requests.exceptions.RequestException:
-        return 0
+        return None
 
 def send_push_notification(user_token, teacher_id, name):
     try:
@@ -163,21 +158,39 @@ def send_push_notification(user_token, teacher_id, name):
     except Exception as e:
         print(f"⚠ Pushbullet通知の送信に失敗しました: {e}")
 
+# ✅ DMMアクセス連続失敗カウント用
+consecutive_errors = 0
+MAX_ERRORS = 5
+
 def check_teacher_availability():
+    global consecutive_errors
     with app.app_context():
         try:
             users = UserData.query.all()
+            error_count_this_run = 0
+
             for user in users:
                 current_count = get_available_slots(user.teacher_id)
                 if current_count is None:
+                    error_count_this_run += 1
                     continue
+
                 if current_count > user.last_available_count:
                     send_push_notification(user.pushbullet_token, user.teacher_id, user.teacher_name)
                 user.last_available_count = current_count
                 db.session.commit()
+
+            if error_count_this_run == len(users):
+                consecutive_errors += 1
+                print(f"⚠ DMMに全ユーザーでアクセス失敗（{consecutive_errors}回連続）")
+                if consecutive_errors >= MAX_ERRORS:
+                    print("🚨 一時的にチェック処理をスキップします")
+                    return
+            else:
+                consecutive_errors = 0
+
         except Exception as e:
             print(f"⚠ 通知チェックでエラー発生: {e}")
-
 
 def clean_old_data():
     with app.app_context():
@@ -187,8 +200,6 @@ def clean_old_data():
             db.session.delete(user)
         db.session.commit()
         print(f"🧹 古いデータを削除しました: {len(old_users)} 件")
-
-
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
