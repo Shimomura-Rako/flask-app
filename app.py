@@ -43,11 +43,15 @@ def assign_user_id():
 @app.route("/set_user", methods=["GET", "POST"])
 def set_user():
     if request.method == "POST":
-        user_id = request.form.get("user_id").strip()
+        user_id = request.form.get("user_id", "").strip()
+        action = request.form.get("action")
+
         if not user_id:
             flash("ユーザーIDを入力してください！", "danger")
-        else:
-            # ✅ 登録済みかどうかチェック（ログイン目的）
+            return redirect("/set_user")
+
+        if action == "login":
+            # ログイン処理（既存IDのみ許可）
             existing = UserData.query.filter_by(user_id=user_id).first()
             if existing:
                 session["user_id"] = user_id
@@ -56,8 +60,19 @@ def set_user():
             else:
                 flash("このユーザーIDは存在しません。もう一度確認してください。", "danger")
                 return redirect("/set_user")
+
+        elif action == "register":
+            # 新規登録（存在チェックなし）
+            session["user_id"] = user_id
+            flash(f"ユーザーIDを登録しました: {user_id}", "success")
+            return redirect("/")
+
+        else:
+            flash("不正な操作です。", "danger")
+            return redirect("/set_user")
+
     else:
-        # ✅ GETアクセス時 → 新規IDを発行（登録目的）
+        # GET時 → ランダムな新規IDを生成
         user_id = generate_user_id()
         session["user_id"] = user_id
         return render_template("set_user.html", user_id=user_id)
