@@ -14,12 +14,28 @@
     {% if user_id %}
       <div class="mb-4">
         <p>🆔 あなたのユーザーID：<strong>{{ user_id }}</strong>（このIDをメモしておくと別端末でも使えます）</p>
-        <div class="btn-group">
-          <a href="/set_user" class="btn btn-outline-secondary btn-sm">IDを変更する</a>
-          <form method="POST" action="/reset_user" style="display:inline;">
-            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('データを完全にリセットしてもよいですか？')">データをリセット</button>
-          </form>
-        </div>
+
+
+
+
+
+
+
+<div class="btn-group">
+  <a href="/set_user" class="btn btn-outline-secondary btn-sm">ユーザーIDを切り替える</a>
+  <form method="POST" action="/reset_user" style="display:inline;">
+    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('このユーザーIDと登録データをすべて削除します。本当によろしいですか？')">
+      完全リセット
+    </button>
+  </form>
+</div>
+
+
+
+
+
+
+
       </div>
     {% endif %}
 

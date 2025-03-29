@@ -166,11 +166,36 @@ def delete_teacher():
         flash(f"講師番号 {teacher_id} は存在しません。", "danger")
     return redirect("/")
 
+
+
+
+
+
+
+
 @app.route("/reset_user", methods=["POST"])
 def reset_user():
+    user_id = session.get("user_id")
+
+    # ユーザーに紐づく講師データを全削除
+    if user_id:
+        UserData.query.filter_by(user_id=user_id).delete()
+        db.session.commit()
+
+    # セッションからユーザーIDを削除
     session.clear()
-    flash("ユーザーIDをリセットしました。新しく設定してください！", "success")
+    flash("ユーザーIDとすべてのデータをリセットしました。新しく設定してください！", "success")
     return redirect("/set_user")
+
+
+
+
+
+
+
+
+
+
 
 @app.route("/tutorial")
 def tutorial():
