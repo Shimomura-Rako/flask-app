@@ -125,6 +125,11 @@ def reset_user():
     return redirect("/set_user")
 
 
+@app.route("/tutorial")
+def tutorial():
+    return render_template("tutorial.html")
+
+
 
 
 def get_teacher_name(teacher_id):
@@ -173,8 +178,21 @@ def check_teacher_availability():
         except Exception as e:
             print(f"⚠ 通知チェックでエラー発生: {e}")
 
+
+def clean_old_data():
+    with app.app_context():
+        threshold = datetime.utcnow() - timedelta(days=30)
+        old_users = UserData.query.filter(UserData.last_accessed < threshold).all()
+        for user in old_users:
+            db.session.delete(user)
+        db.session.commit()
+        print(f"🧹 古いデータを削除しました: {len(old_users)} 件")
+
+
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
+scheduler.add_job(clean_old_data, 'cron', hour=4)
 scheduler.start()
 
 if __name__ == "__main__":
