@@ -1,14 +1,15 @@
+<!-- ✅ set_user.html 全コード -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ユーザーID設定 - pamoka</title>
+  <title>ユーザーIDを確認 - pamoka</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
   <div class="container mt-5">
-    <h1 class="mb-4">ユーザーIDを設定してください</h1>
+    <h1 class="mb-4">あなたのユーザーID</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -18,29 +19,29 @@
       {% endif %}
     {% endwith %}
 
-    <form method="POST" action="/set_user">
-      <div class="mb-3">
-        <label for="user_id" class="form-label">ユーザーID（自由に決めてOK！）</label>
-        <input type="text" class="form-control" id="user_id" name="user_id" required>
-        <div class="form-text">例：tanaka123、my-name、abc2025 など<br>
-        <strong>※他の人と被らないようにユニークなIDを設定してください</strong><br>
-        ※忘れないようにメモしておいてください！</div>
+    {% if user_id %}
+      <div class="alert alert-success">
+        <strong>{{ user_id }}</strong><br>
+        このIDをメモしておくと、別の端末でも同じ講師を管理できます！
       </div>
-      <button type="submit" class="btn btn-primary">保存して始める</button>
-    </form>
+      <form method="POST" action="/set_user">
+        <input type="hidden" name="user_id" value="{{ user_id }}">
+        <button type="submit" class="btn btn-primary">このIDで始める</button>
+      </form>
+
+<hr>
+<h2 class="mt-4">既にユーザーIDを持っている方</h2>
+<form method="POST" action="/set_user">
+  <div class="mb-3">
+    <label for="user_id" class="form-label">ユーザーIDを入力してログイン</label>
+    <input type="text" class="form-control" id="user_id" name="user_id" required>
   </div>
+  <button type="submit" class="btn btn-secondary">このIDでログイン</button>
+</form>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const savedUserId = localStorage.getItem("user_id") || "";
-      document.getElementById("user_id").value = savedUserId;
-    });
 
-    document.querySelector("form").addEventListener("submit", function() {
-      const userId = document.getElementById("user_id").value.trim();
-      localStorage.setItem("user_id", userId);
-    });
-  </script>
+    {% endif %}
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
