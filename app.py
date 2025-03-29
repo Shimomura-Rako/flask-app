@@ -212,7 +212,11 @@ def clean_old_data():
         print(f"🧹 古いデータを削除しました: {len(old_users)} 件")
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
+#scheduler.add_job(check_teacher_availability, 'interval', minutes=1)
+# 🌟 環境変数から読み込んだ値を使ってチェック間隔を指定！
+interval_minutes = int(os.environ.get("CHECK_INTERVAL_MINUTES", 1))  # ← 環境変数 or デフォルト1分
+scheduler.add_job(check_teacher_availability, 'interval', minutes=interval_minutes)
+
 scheduler.add_job(clean_old_data, 'cron', hour=4)
 scheduler.start()
 
