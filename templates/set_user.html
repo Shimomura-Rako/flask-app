@@ -8,6 +8,24 @@
 </head>
 <body>
   <div class="container mt-5">
+
+    <!-- 🔑 すでにユーザーIDを持っている方向け（先頭に移動） -->
+    <h2 class="mb-4">🔑 すでにユーザーIDをお持ちの方はこちら</h2>
+    <form method="POST" action="/set_user">
+      <div class="mb-3">
+        <label for="user_id" class="form-label">ユーザーIDを入力してログイン</label>
+        <input type="text" class="form-control" id="user_id" name="user_id" required>
+      </div>
+      <button type="submit" class="btn btn-secondary">このIDでログイン</button>
+    </form>
+    <p class="text-muted mt-3">
+      ※ログインに使うIDを忘れてしまった場合は、<strong>新しくIDを作成し直して</strong>ご利用いただけます。<br>
+      30日以上アクセスのないIDは自動で削除されます。
+    </p>
+
+    <hr>
+
+    <!-- 🆕 新規ID作成（下へ移動） -->
     <h1 class="mb-4">はじめてご利用の方へ</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -32,21 +50,6 @@
       </form>
     {% endif %}
 
-    <hr>
-
-    <h2 class="mt-5">🔑 すでにユーザーIDをお持ちの方はこちら</h2>
-    <form method="POST" action="/set_user">
-      <div class="mb-3">
-        <label for="user_id" class="form-label">ユーザーIDを入力してログイン</label>
-        <input type="text" class="form-control" id="user_id" name="user_id" required>
-      </div>
-      <button type="submit" class="btn btn-secondary">このIDでログイン</button>
-    </form>
-
-    <p class="text-muted mt-3">
-      ※ログインに使うIDを忘れてしまった場合は、<strong>新しくIDを作成し直して</strong>ご利用いただけます。<br>
-      30日以上アクセスのないIDは自動で削除されます。
-    </p>
   </div>
 
   <script>
