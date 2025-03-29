@@ -291,6 +291,18 @@ scheduler.add_job(check_teacher_availability, 'interval', minutes=interval_minut
 scheduler.add_job(clean_old_data, 'cron', hour=4)
 scheduler.start()
 
+
+from flask import send_file  # ← すでにあるかも。なければこれを追加！
+
+@app.route("/download")
+def download_db():
+    try:
+        return send_file("database.db", as_attachment=True)
+    except Exception as e:
+        return f"ダウンロードに失敗しました: {e}"
+
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
